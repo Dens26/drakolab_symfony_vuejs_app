@@ -3,6 +3,11 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use App\Entity\Traits\HasDatetimeTrait;
 use App\Entity\Traits\HasIdTrait;
 use App\Entity\Traits\HasPriorityTrait;
@@ -13,7 +18,15 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: StepRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new Get(),
+        new Post(),
+        new GetCollection(),
+        new Delete(),
+        new Patch()
+    ]
+)]
 class Step
 {
     use HasIdTrait;

@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
 use App\Entity\Traits\HasDatetimeTrait;
 use App\Entity\Traits\HasDescriptionTrait;
 use App\Entity\Traits\HasIdTrait;

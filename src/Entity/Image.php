@@ -3,15 +3,26 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use App\Entity\Traits\HasDatetimeTrait;
 use App\Entity\Traits\HasDescriptionTrait;
 use App\Entity\Traits\HasIdTrait;
 use App\Entity\Traits\HasPriorityTrait;
 use App\Repository\ImageRepository;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
 
 #[ORM\Entity(repositoryClass: ImageRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new Get(),
+        new Post(),
+        new GetCollection(),
+        new Delete()
+    ]
+)]
 class Image
 {
     use HasIdTrait;
