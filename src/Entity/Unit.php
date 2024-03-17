@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Entity\Traits\HasIdTrait;
 use App\Repository\UnitRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -9,22 +10,26 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: UnitRepository::class)]
+#[ApiResource]
 class Unit
 {
     use HasIdTrait;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 64)]
     private ?string $singular = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 64)]
     private ?string $plural = null;
 
-    #[ORM\OneToMany(targetEntity: RecipeHasIngredient::class, mappedBy: 'unit')]
-    private Collection $RecipeHasIngredients;
+    /**
+     * @var Collection<int, RecipeHasIngredient>
+     */
+    #[ORM\OneToMany(mappedBy: 'unit', targetEntity: RecipeHasIngredient::class)]
+    private Collection $recipeHasIngredients;
 
     public function __construct()
     {
-        $this->RecipeHasIngredients = new ArrayCollection();
+        $this->recipeHasIngredients = new ArrayCollection();
     }
 
     public function getSingular(): ?string
@@ -32,7 +37,7 @@ class Unit
         return $this->singular;
     }
 
-    public function setSingular(string $singular): static
+    public function setSingular(string $singular): self
     {
         $this->singular = $singular;
 
@@ -44,7 +49,7 @@ class Unit
         return $this->plural;
     }
 
-    public function setPlural(string $plural): static
+    public function setPlural(string $plural): self
     {
         $this->plural = $plural;
 
@@ -56,22 +61,22 @@ class Unit
      */
     public function getRecipeHasIngredients(): Collection
     {
-        return $this->RecipeHasIngredients;
+        return $this->recipeHasIngredients;
     }
 
-    public function addRecipeHasIngredient(RecipeHasIngredient $recipeHasIngredient): static
+    public function addRecipeHasIngredient(RecipeHasIngredient $recipeHasIngredient): self
     {
-        if (!$this->RecipeHasIngredients->contains($recipeHasIngredient)) {
-            $this->RecipeHasIngredients->add($recipeHasIngredient);
+        if (!$this->recipeHasIngredients->contains($recipeHasIngredient)) {
+            $this->recipeHasIngredients[] = $recipeHasIngredient;
             $recipeHasIngredient->setUnit($this);
         }
 
         return $this;
     }
 
-    public function removeRecipeHasIngredient(RecipeHasIngredient $recipeHasIngredient): static
+    public function removeRecipeHasIngredient(RecipeHasIngredient $recipeHasIngredient): self
     {
-        if ($this->RecipeHasIngredients->removeElement($recipeHasIngredient)) {
+        if ($this->recipeHasIngredients->removeElement($recipeHasIngredient)) {
             // set the owning side to null (unless already changed)
             if ($recipeHasIngredient->getUnit() === $this) {
                 $recipeHasIngredient->setUnit(null);
@@ -80,4 +85,5 @@ class Unit
 
         return $this;
     }
+
 }
