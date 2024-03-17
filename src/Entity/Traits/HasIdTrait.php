@@ -4,7 +4,7 @@ namespace App\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
 
-class HasIdTrait
+trait HasIdTrait
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]

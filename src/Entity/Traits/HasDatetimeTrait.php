@@ -4,7 +4,7 @@ namespace App\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
 
-class HasDatetimeTrait
+trait HasDatetimeTrait
 {
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;

@@ -7,7 +7,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[UniqueEntity('name')]
-class HasNameTrait
+trait HasNameTrait
 {
     #[ORM\Column(length: 128)]
     #[Assert\Length(min: 5, max: 128)]
