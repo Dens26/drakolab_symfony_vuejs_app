@@ -9,6 +9,8 @@ use App\Entity\Traits\HasDescriptionTrait;
 use App\Entity\Traits\HasDatetimeTrait;
 
 use App\Repository\RecipeRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -32,6 +34,14 @@ class Recipe
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
     private ?int $preparation = null;
+
+    #[ORM\OneToMany(targetEntity: Step::class, mappedBy: 'recipe', orphanRemoval: true)]
+    private Collection $steps;
+
+    public function __construct()
+    {
+        $this->steps = new ArrayCollection();
+    }
 
     public function isDraft(): ?bool
     {
@@ -77,6 +87,36 @@ class Recipe
     public function setPreparation(?int $preparation): static
     {
         $this->preparation = $preparation;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Step>
+     */
+    public function getSteps(): Collection
+    {
+        return $this->steps;
+    }
+
+    public function addStep(Step $step): static
+    {
+        if (!$this->steps->contains($step)) {
+            $this->steps->add($step);
+            $step->setRecipe($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStep(Step $step): static
+    {
+        if ($this->steps->removeElement($step)) {
+            // set the owning side to null (unless already changed)
+            if ($step->getRecipe() === $this) {
+                $step->setRecipe(null);
+            }
+        }
 
         return $this;
     }
