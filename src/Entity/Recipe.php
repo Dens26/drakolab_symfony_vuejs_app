@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Get;
 use App\Entity\Traits\HasDatetimeTrait;
 use App\Entity\Traits\HasDescriptionTrait;
 use App\Entity\Traits\HasIdTrait;
@@ -14,9 +12,12 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: RecipeRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: ['groups' => ['read']]
+)]
 class Recipe
 {
     use HasIdTrait;
@@ -25,54 +26,63 @@ class Recipe
     use HasDatetimeTrait;
 
     #[ORM\Column]
+    #[Groups('read')]
     private ?bool $draft = true;
 
     /**
      * Temps de cuisson.
      */
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    #[Groups('read')]
     private ?int $cooking = null;
 
     /**
      * Temps de repos.
      */
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    #[Groups('read')]
     private ?int $break = null;
 
     /**
      * Temps de préparation.
      */
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    #[Groups('read')]
     private ?int $preparation = null;
 
     /**
      * @var Collection<int, Step>
      */
     #[ORM\OneToMany(mappedBy: 'recipe', targetEntity: Step::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[Groups('read')]
     private Collection $steps;
 
     /**
      * @var Collection<int, Image>
      */
     #[ORM\OneToMany(mappedBy: 'recipe', targetEntity: Image::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[Groups('read')]
     private Collection $images;
 
     /**
      * @var Collection<int, RecipeHasIngredient>
      */
     #[ORM\OneToMany(mappedBy: 'recipe', targetEntity: RecipeHasIngredient::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[Groups('read')]
     private Collection $recipeHasIngredients;
 
     /**
      * @var Collection<int, RecipeHasSource>
      */
     #[ORM\OneToMany(mappedBy: 'recipe', targetEntity: RecipeHasSource::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[Groups('read')]
     private Collection $recipeHasSources;
 
     /**
      * @var Collection<int, Tag>
      */
     #[ORM\ManyToMany(targetEntity: Tag::class, mappedBy: 'recipes')]
+    #[Groups('read')]
     private Collection $tags;
 
     public function __construct()

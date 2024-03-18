@@ -16,6 +16,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: StepRepository::class)]
 #[ApiResource(
@@ -25,7 +26,8 @@ use Doctrine\ORM\Mapping as ORM;
         new GetCollection(),
         new Delete(),
         new Patch()
-    ]
+    ],
+    normalizationContext: ['groups' => ['read']]
 )]
 class Step
 {
@@ -34,6 +36,7 @@ class Step
     use HasDatetimeTrait;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups('read')]
     private ?string $content = null;
 
     #[ORM\ManyToOne(inversedBy: 'steps')]
@@ -44,6 +47,7 @@ class Step
      * @var Collection<int, Image>
      */
     #[ORM\OneToMany(mappedBy: 'step', targetEntity: Image::class, cascade: ['persist', 'remove'])]
+    #[Groups('read')]
     private Collection $images;
 
     public function __construct()

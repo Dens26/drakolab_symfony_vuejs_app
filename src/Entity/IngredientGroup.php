@@ -24,7 +24,8 @@ use Doctrine\ORM\Mapping as ORM;
         new GetCollection(),
         new Delete(),
         new Patch()
-    ]
+    ],
+    normalizationContext: ['groups' => ['read']]
 )]
 class IngredientGroup
 {

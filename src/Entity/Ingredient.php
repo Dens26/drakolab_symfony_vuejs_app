@@ -16,6 +16,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: IngredientRepository::class)]
 #[ApiResource(
@@ -25,7 +26,8 @@ use ApiPlatform\Metadata\Post;
         new GetCollection(),
         new Delete(),
         new Patch()
-    ]
+    ],
+    normalizationContext: ['groups' => ['read']]
 )]
 class Ingredient
 {
@@ -35,15 +37,19 @@ class Ingredient
     use HasDatetimeTrait;
 
     #[ORM\Column]
+    #[Groups("read")]
     private ?bool $vegan = false;
 
     #[ORM\Column]
+    #[Groups("read")]
     private ?bool $vegetarian = true;
 
     #[ORM\Column]
+    #[Groups("read")]
     private ?bool $dairyFree = false;
 
     #[ORM\Column]
+    #[Groups("read")]
     private ?bool $glutenFree = false;
 
     /**

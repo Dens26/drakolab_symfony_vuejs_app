@@ -13,6 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ImageRepository::class)]
 #[ApiResource(
@@ -21,7 +22,8 @@ use ApiPlatform\Metadata\Post;
         new Post(),
         new GetCollection(),
         new Delete()
-    ]
+    ],
+    normalizationContext: ['groups' => ['read']]
 )]
 class Image
 {
@@ -31,9 +33,11 @@ class Image
     use HasDatetimeTrait;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['read'])]
     private ?string $path = null;
 
     #[ORM\Column]
+    #[Groups(['read'])]
     private ?int $size = null;
 
     #[ORM\ManyToOne(inversedBy: 'images')]

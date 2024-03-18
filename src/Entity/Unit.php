@@ -13,6 +13,7 @@ use App\Repository\UnitRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UnitRepository::class)]
 #[ApiResource(
@@ -22,16 +23,19 @@ use Doctrine\ORM\Mapping as ORM;
         new GetCollection(),
         new Delete(),
         new Patch()
-    ]
+    ],
+    normalizationContext: ['groups' => ['read']]
 )]
 class Unit
 {
     use HasIdTrait;
 
     #[ORM\Column(length: 64)]
+    #[Groups('read')]
     private ?string $singular = null;
 
     #[ORM\Column(length: 64)]
+    #[Groups('read')]
     private ?string $plural = null;
 
     /**
