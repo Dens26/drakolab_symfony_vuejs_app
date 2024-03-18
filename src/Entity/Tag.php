@@ -2,38 +2,63 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use App\Entity\Traits\HasDescriptionTrait;
 use App\Entity\Traits\HasIdTrait;
 use App\Entity\Traits\HasNameTrait;
-use App\Entity\Traits\HasPriorityTrait;
 use App\Repository\TagRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: TagRepository::class)]
+#[ApiResource(
+    operations: [
+        new Get(),
+        new Post(),
+        new GetCollection(),
+        new Delete(),
+        new Patch()
+    ],
+    normalizationContext: ['groups' => ['read']]
+)]
 class Tag
 {
     use HasIdTrait;
     use HasNameTrait;
     use HasDescriptionTrait;
-    use HasPriorityTrait;
 
     #[ORM\Column]
+    #[Groups('read')]
     private ?bool $menu = null;
 
-    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'tags')]
-    private ?self $tag = null;
+    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'children')]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    #[Groups('read')]
+    private ?self $parent = null;
 
-    #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'tag')]
-    private Collection $tags;
+    /**
+     * @var Collection<int, Tag>
+     */
+    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
+    #[Groups('read')]
+    private Collection $children;
 
+    /**
+     * @var Collection<int, Recipe>
+     */
     #[ORM\ManyToMany(targetEntity: Recipe::class, inversedBy: 'tags')]
     private Collection $recipes;
 
     public function __construct()
     {
-        $this->tags = new ArrayCollection();
+        $this->children = new ArrayCollection();
         $this->recipes = new ArrayCollection();
     }
 
@@ -42,21 +67,21 @@ class Tag
         return $this->menu;
     }
 
-    public function setMenu(bool $menu): static
+    public function setMenu(bool $menu): self
     {
         $this->menu = $menu;
 
         return $this;
     }
 
-    public function getTag(): ?self
+    public function getParent(): ?self
     {
-        return $this->tag;
+        return $this->parent;
     }
 
-    public function setTag(?self $tag): static
+    public function setParent(?self $parent): self
     {
-        $this->tag = $tag;
+        $this->parent = $parent;
 
         return $this;
     }
@@ -64,27 +89,27 @@ class Tag
     /**
      * @return Collection<int, self>
      */
-    public function getTags(): Collection
+    public function getChildren(): Collection
     {
-        return $this->tags;
+        return $this->children;
     }
 
-    public function addTag(self $tag): static
+    public function addChild(self $child): self
     {
-        if (!$this->tags->contains($tag)) {
-            $this->tags->add($tag);
-            $tag->setTag($this);
+        if (!$this->children->contains($child)) {
+            $this->children[] = $child;
+            $child->setParent($this);
         }
 
         return $this;
     }
 
-    public function removeTag(self $tag): static
+    public function removeChild(self $child): self
     {
-        if ($this->tags->removeElement($tag)) {
+        if ($this->children->removeElement($child)) {
             // set the owning side to null (unless already changed)
-            if ($tag->getTag() === $this) {
-                $tag->setTag(null);
+            if ($child->getParent() === $this) {
+                $child->setParent(null);
             }
         }
 
@@ -99,19 +124,20 @@ class Tag
         return $this->recipes;
     }
 
-    public function addRecipe(Recipe $recipe): static
+    public function addRecipe(Recipe $recipe): self
     {
         if (!$this->recipes->contains($recipe)) {
-            $this->recipes->add($recipe);
+            $this->recipes[] = $recipe;
         }
 
         return $this;
     }
 
-    public function removeRecipe(Recipe $recipe): static
+    public function removeRecipe(Recipe $recipe): self
     {
         $this->recipes->removeElement($recipe);
 
         return $this;
     }
+
 }

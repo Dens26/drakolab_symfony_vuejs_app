@@ -2,6 +2,12 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use App\Entity\Traits\HasDatetimeTrait;
 use App\Entity\Traits\HasIdTrait;
 use App\Entity\Traits\HasPriorityTrait;
@@ -10,22 +16,38 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: StepRepository::class)]
+#[ApiResource(
+    operations: [
+        new Get(),
+        new Post(),
+        new GetCollection(),
+        new Delete(),
+        new Patch()
+    ],
+    normalizationContext: ['groups' => ['read']]
+)]
 class Step
 {
     use HasIdTrait;
-    use HasDatetimeTrait;
     use HasPriorityTrait;
+    use HasDatetimeTrait;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: Types::TEXT)]
+    #[Groups('read')]
     private ?string $content = null;
 
     #[ORM\ManyToOne(inversedBy: 'steps')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Recipe $recipe = null;
 
-    #[ORM\OneToMany(targetEntity: Image::class, mappedBy: 'step')]
+    /**
+     * @var Collection<int, Image>
+     */
+    #[ORM\OneToMany(mappedBy: 'step', targetEntity: Image::class, cascade: ['persist', 'remove'])]
+    #[Groups('read')]
     private Collection $images;
 
     public function __construct()
@@ -38,7 +60,7 @@ class Step
         return $this->content;
     }
 
-    public function setContent(string $content): static
+    public function setContent(string $content): self
     {
         $this->content = $content;
 
@@ -50,7 +72,7 @@ class Step
         return $this->recipe;
     }
 
-    public function setRecipe(?Recipe $recipe): static
+    public function setRecipe(?Recipe $recipe): self
     {
         $this->recipe = $recipe;
 
@@ -65,17 +87,17 @@ class Step
         return $this->images;
     }
 
-    public function addImage(Image $image): static
+    public function addImage(Image $image): self
     {
         if (!$this->images->contains($image)) {
-            $this->images->add($image);
+            $this->images[] = $image;
             $image->setStep($this);
         }
 
         return $this;
     }
 
-    public function removeImage(Image $image): static
+    public function removeImage(Image $image): self
     {
         if ($this->images->removeElement($image)) {
             // set the owning side to null (unless already changed)

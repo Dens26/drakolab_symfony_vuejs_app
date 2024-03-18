@@ -4,6 +4,7 @@ namespace App\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[UniqueEntity('name')]
@@ -24,6 +25,7 @@ trait HasNameTrait
     public function setName(string $name): static
     {
         $this->name = $name;
+        $this->setSlug();
 
         return $this;
     }
@@ -33,9 +35,10 @@ trait HasNameTrait
         return $this->slug;
     }
 
-    public function setSlug(string $slug): static
+    public function setSlug(): static
     {
-        $this->slug = $slug;
+        $slugger = new AsciiSlugger();
+        $this->slug = $slugger->slug($this->name);
 
         return $this;
     }

@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use App\Entity\Traits\HasDatetimeTrait;
 use App\Entity\Traits\HasDescriptionTrait;
 use App\Entity\Traits\HasIdTrait;
@@ -10,8 +12,23 @@ use App\Repository\IngredientRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: IngredientRepository::class)]
+#[ApiResource(
+    operations: [
+        new Get(),
+        new Post(),
+        new GetCollection(),
+        new Delete(),
+        new Patch()
+    ],
+    normalizationContext: ['groups' => ['read']]
+)]
 class Ingredient
 {
     use HasIdTrait;
@@ -20,23 +37,30 @@ class Ingredient
     use HasDatetimeTrait;
 
     #[ORM\Column]
-    private ?bool $vegan = null;
+    #[Groups("read")]
+    private ?bool $vegan = false;
 
     #[ORM\Column]
-    private ?bool $vegatarian = null;
+    #[Groups("read")]
+    private ?bool $vegetarian = true;
 
     #[ORM\Column]
-    private ?bool $dailyFree = null;
+    #[Groups("read")]
+    private ?bool $dairyFree = false;
 
     #[ORM\Column]
-    private ?bool $glutenFree = null;
+    #[Groups("read")]
+    private ?bool $glutenFree = false;
 
-    #[ORM\OneToMany(targetEntity: RecipeHasIngredient::class, mappedBy: 'ingredient')]
-    private Collection $RecipeHasIngredients;
+    /**
+     * @var Collection<int, RecipeHasIngredient>
+     */
+    #[ORM\OneToMany(mappedBy: 'ingredient', targetEntity: RecipeHasIngredient::class, orphanRemoval: true)]
+    private Collection $recipeHasIngredients;
 
     public function __construct()
     {
-        $this->RecipeHasIngredients = new ArrayCollection();
+        $this->recipeHasIngredients = new ArrayCollection();
     }
 
     public function isVegan(): ?bool
@@ -44,33 +68,33 @@ class Ingredient
         return $this->vegan;
     }
 
-    public function setVegan(bool $vegan): static
+    public function setVegan(bool $vegan): self
     {
         $this->vegan = $vegan;
 
         return $this;
     }
 
-    public function isVegatarian(): ?bool
+    public function isVegetarian(): ?bool
     {
-        return $this->vegatarian;
+        return $this->vegetarian;
     }
 
-    public function setVegatarian(bool $vegatarian): static
+    public function setVegetarian(bool $vegetarian): self
     {
-        $this->vegatarian = $vegatarian;
+        $this->vegetarian = $vegetarian;
 
         return $this;
     }
 
-    public function isDailyFree(): ?bool
+    public function isDairyFree(): ?bool
     {
-        return $this->dailyFree;
+        return $this->dairyFree;
     }
 
-    public function setDailyFree(bool $dailyFree): static
+    public function setDairyFree(bool $dairyFree): self
     {
-        $this->dailyFree = $dailyFree;
+        $this->dairyFree = $dairyFree;
 
         return $this;
     }
@@ -80,7 +104,7 @@ class Ingredient
         return $this->glutenFree;
     }
 
-    public function setGlutenFree(bool $glutenFree): static
+    public function setGlutenFree(bool $glutenFree): self
     {
         $this->glutenFree = $glutenFree;
 
@@ -92,22 +116,22 @@ class Ingredient
      */
     public function getRecipeHasIngredients(): Collection
     {
-        return $this->RecipeHasIngredients;
+        return $this->recipeHasIngredients;
     }
 
-    public function addRecipeHasIngredient(RecipeHasIngredient $recipeHasIngredient): static
+    public function addRecipeHasIngredient(RecipeHasIngredient $recipeHasIngredient): self
     {
-        if (!$this->RecipeHasIngredients->contains($recipeHasIngredient)) {
-            $this->RecipeHasIngredients->add($recipeHasIngredient);
+        if (!$this->recipeHasIngredients->contains($recipeHasIngredient)) {
+            $this->recipeHasIngredients[] = $recipeHasIngredient;
             $recipeHasIngredient->setIngredient($this);
         }
 
         return $this;
     }
 
-    public function removeRecipeHasIngredient(RecipeHasIngredient $recipeHasIngredient): static
+    public function removeRecipeHasIngredient(RecipeHasIngredient $recipeHasIngredient): self
     {
-        if ($this->RecipeHasIngredients->removeElement($recipeHasIngredient)) {
+        if ($this->recipeHasIngredients->removeElement($recipeHasIngredient)) {
             // set the owning side to null (unless already changed)
             if ($recipeHasIngredient->getIngredient() === $this) {
                 $recipeHasIngredient->setIngredient(null);
